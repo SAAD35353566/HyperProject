@@ -1,0 +1,151 @@
+-- Akundisco Hub (Full Black) + Key check
+-- Wrong key = full RED flash (GothamBold)
+local correctKey = "MY-SECRET-KEY" -- change this
+
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+-- Cleanup
+if CoreGui:FindFirstChild("AkundiscoKeyGui") then
+    CoreGui.AkundiscoKeyGui:Destroy()
+end
+if CoreGui:FindFirstChild("AkundiscoHub") then
+    CoreGui.AkundiscoHub:Destroy()
+end
+
+-- Create Key GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "AkundiscoKeyGui"
+gui.ResetOnSpawn = false
+gui.Parent = CoreGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 350, 0, 160)
+frame.Position = UDim2.new(0.5, -175, 0.4, -80)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -20, 0, 30)
+title.Position = UDim2.new(0, 10, 0, 10)
+title.Text = "Enter the key to access Akundisco Hub"
+title.TextScaled = true
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.Font = Enum.Font.GothamBold
+title.Parent = frame
+
+local box = Instance.new("TextBox")
+box.Size = UDim2.new(1, -20, 0, 40)
+box.Position = UDim2.new(0, 10, 0, 50)
+box.PlaceholderText = "Type key here..."
+box.ClearTextOnFocus = false
+box.Text = ""
+box.TextScaled = false
+box.Font = Enum.Font.Gotham
+box.BackgroundColor3 = Color3.fromRGB(0,0,0)
+box.TextColor3 = Color3.fromRGB(255,255,255)
+box.BorderSizePixel = 1
+box.Parent = frame
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0.5, -15, 0, 36)
+button.Position = UDim2.new(0, 10, 1, -46)
+button.Text = "Submit"
+button.TextColor3 = Color3.fromRGB(255,255,255)
+button.BackgroundColor3 = Color3.fromRGB(0,0,0)
+button.Font = Enum.Font.GothamBold
+button.TextScaled = true
+button.Parent = frame
+
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(0.5, -20, 0, 36)
+status.Position = UDim2.new(0.5, 10, 1, -46)
+status.Text = ""
+status.TextColor3 = Color3.fromRGB(255,85,0) -- Orange normal
+status.BackgroundTransparency = 1
+status.Font = Enum.Font.Gotham
+status.TextScaled = true
+status.Parent = frame
+
+-- Tween settings
+local tweenInfo = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local toRed = TweenService:Create(frame, tweenInfo, {BackgroundColor3 = Color3.fromRGB(255, 0, 0)})
+local toBlack = TweenService:Create(frame, tweenInfo, {BackgroundColor3 = Color3.fromRGB(0, 0, 0)})
+
+local canAttempt = true
+
+-- Load hub after success
+local function loadHub()
+    if gui and gui.Parent then gui:Destroy() end
+
+    local hubGui = Instance.new("ScreenGui")
+    hubGui.Name = "AkundiscoHub"
+    hubGui.ResetOnSpawn = false
+    hubGui.Parent = CoreGui
+
+    local hubFrame = Instance.new("Frame")
+    hubFrame.Size = UDim2.new(0, 400, 0, 220)
+    hubFrame.Position = UDim2.new(0.5, -200, 0.4, -110)
+    hubFrame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    hubFrame.BorderSizePixel = 0
+    hubFrame.Parent = hubGui
+
+    local hubTitle = Instance.new("TextLabel")
+    hubTitle.Size = UDim2.new(1, 0, 0, 50)
+    hubTitle.BackgroundTransparency = 1
+    hubTitle.Text = "Akundisco Hub"
+    hubTitle.TextColor3 = Color3.fromRGB(255,255,255)
+    hubTitle.Font = Enum.Font.GothamBold
+    hubTitle.TextSize = 26
+    hubTitle.Parent = hubFrame
+
+    local underline = Instance.new("Frame")
+    underline.Size = UDim2.new(1, 0, 0, 2)
+    underline.BackgroundColor3 = Color3.fromRGB(255,85,0)
+    underline.BorderSizePixel = 0
+    underline.Position = UDim2.new(0,0,0,50)
+    underline.Parent = hubFrame
+
+    local info = Instance.new("TextLabel")
+    info.Size = UDim2.new(1, -20, 1, -70)
+    info.Position = UDim2.new(0, 10, 0, 60)
+    info.BackgroundTransparency = 1
+    info.Text = "Welcome to Akundisco Hub!"
+    info.TextColor3 = Color3.fromRGB(255,255,255)
+    info.Font = Enum.Font.Gotham
+    info.TextSize = 20
+    info.TextWrapped = true
+    info.Parent = hubFrame
+end
+
+-- Button logic
+button.MouseButton1Click:Connect(function()
+    if not canAttempt then return end
+    canAttempt = false
+
+    local entered = tostring(box.Text or "")
+    if entered == correctKey then
+        status.TextColor3 = Color3.fromRGB(0,255,0)
+        status.Font = Enum.Font.GothamBold
+        status.Text = "Access granted!"
+        wait(0.4)
+        loadHub()
+    else
+        -- Full-red flash + GothamBold for wrong message
+        status.Font = Enum.Font.GothamBold
+        status.TextColor3 = Color3.fromRGB(255,255,255)
+        status.Text = "Wrong key!"
+        toRed:Play()
+        wait(0.35)
+        toBlack:Play()
+        wait(0.18)
+        -- restore normal status color & font
+        status.Font = Enum.Font.Gotham
+        status.TextColor3 = Color3.fromRGB(255,85,0)
+    end
+
+    wait(0.15) -- small cooldown to avoid spamming
+    canAttempt = true
+end)
